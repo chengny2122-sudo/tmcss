@@ -55,6 +55,79 @@
             position: relative;
         }
 
+        /* Password Auth Overlay */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .auth-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 36px 28px;
+            width: 90%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        .auth-card h2 {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .auth-card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-element);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+            margin-bottom: 16px;
+            text-align: center;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .auth-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 12px;
+            min-height: 18px;
+        }
+
         /* Particle Canvas */
         #confettiCanvas {
             position: fixed;
@@ -510,6 +583,17 @@
 </head>
 <body>
 
+    <!-- Password Protection Overlay -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <h2>TMCSS Math Access</h2>
+            <p>Enter the passcode to unlock the selector</p>
+            <input type="password" id="passwordInput" class="auth-input" placeholder="Enter password" autofocus>
+            <button id="loginBtn" class="btn-primary">Unlock App</button>
+            <div id="authError" class="error-msg"></div>
+        </div>
+    </div>
+
     <canvas id="confettiCanvas"></canvas>
 
     <div class="app-container">
@@ -592,6 +676,10 @@
     </div>
 
     <script>
+        // Password Configuration
+        const APP_PASSWORD = "tmcss123"; // <-- Change your password here
+        let isAuthenticated = false;
+
         // Student Data
         const classData = {
             "5A": [
@@ -694,6 +782,11 @@
         let resetTarget = null; // 'active' or 'all'
 
         // DOM Elements
+        const authOverlay = document.getElementById('authOverlay');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const authError = document.getElementById('authError');
+
         const classBtns = document.querySelectorAll('.class-btn');
         const selectBtn = document.getElementById('selectBtn');
         const studentDisplay = document.getElementById('studentDisplay');
@@ -710,8 +803,27 @@
         const modalConfirm = document.getElementById('modalConfirm');
         const modalCancel = document.getElementById('modalCancel');
 
+        // Authentication Handler
+        function authenticate() {
+            if (passwordInput.value === APP_PASSWORD) {
+                isAuthenticated = true;
+                authOverlay.classList.add('hidden');
+                authError.textContent = '';
+                passwordInput.value = '';
+            } else {
+                authError.textContent = 'Incorrect password. Please try again.';
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        }
+
         // Initialization
         function init() {
+            loginBtn.addEventListener('click', authenticate);
+            passwordInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') authenticate();
+            });
+
             classBtns.forEach(btn => {
                 btn.addEventListener('click', () => switchClass(btn.getAttribute('data-class')));
             });
@@ -724,6 +836,7 @@
 
             // Keyboard navigation
             document.addEventListener('keydown', (e) => {
+                if (!isAuthenticated) return;
                 if (e.code === 'Space' && !selectBtn.disabled && !isDrawing && currentClass) {
                     e.preventDefault();
                     drawStudent();
@@ -735,7 +848,7 @@
 
         // Switch active class
         function switchClass(className) {
-            if (isDrawing) return;
+            if (isDrawing || !isAuthenticated) return;
 
             currentClass = className;
 
@@ -763,7 +876,7 @@
 
         // Draw Random Student
         function drawStudent() {
-            if (!currentClass || isDrawing) return;
+            if (!currentClass || isDrawing || !isAuthenticated) return;
 
             const all = classData[currentClass];
             const drawn = selectedState[currentClass];
@@ -879,6 +992,7 @@
 
         // Reset dialog handlers
         function promptReset(target) {
+            if (!isAuthenticated) return;
             resetTarget = target;
             const modalTitle = document.getElementById('modalTitle');
             const modalDescription = document.getElementById('modalDescription');
