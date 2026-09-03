@@ -1,1 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMCSS Math — Student Selector</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --bg-element: #0f172a;
+            --border-color: #334155;
+            --border-highlight: #475569;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #96A3b8;
+            --text-muted: #64748b;
+            
+            --accent-primary: #6366f1;
+            --accent-primary-hover: #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            
+            --class-5A: #ef4444;
+            --class-6A: #10b981;
+            --class-m2: #a855f7;
+            
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-app);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Particle Canvas */
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        /* Main Container */
+        .app-container {
+            width: 100%;
+            max-width: 860px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            padding: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            color: var(--accent-primary);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .brand-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background-color: var(--accent-primary);
+            border-radius: 50%;
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            margin-top: 4px;
+        }
+
+        .header-meta {
+            text-align: right;
+        }
+
+        .mode-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            user-select: none;
+            font-weight: 500;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+            background-color: var(--border-color);
+            border-radius: 20px;
+            transition: background-color 0.2s ease;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+
+        input[type="checkbox"]:checked + .toggle-switch {
+            background-color: var(--accent-primary);
+        }
+
+        input[type="checkbox"]:checked + .toggle-switch::after {
+            transform: translateX(18px);
+        }
+
+        /* Class Selector Tabs */
+        .class-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .class-btn {
+            background: var(--bg-element);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .class-btn:hover {
+            border-color: var(--border-highlight);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .class-btn.active {
+            color: var(--text-primary);
+            border-color: transparent;
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .class-btn[data-class="5A"].active { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .class-btn[data-class="6A"].active { background: linear-gradient(135deg, #10b981, #059669); }
+        .class-btn[data-class="M2"].active { background: linear-gradient(135deg, #a855f7, #9333ea); }
+
+        .class-count-badge {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            font-weight: 600;
+        }
+
+        /* Selection Display Stage */
+        .stage-card {
+            background: var(--bg-element);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 40px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .stage-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at center, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .stage-card.active-glow::before {
+            opacity: 1;
+        }
+
+        .student-display {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--text-primary);
+            z-index: 2;
+            letter-spacing: 1px;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .student-display.placeholder {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0;
+        }
+
+        .student-display.countdown {
+            font-size: 64px;
+            color: var(--accent-primary);
+            font-weight: 800;
+            animation: pulseScale 0.5s ease infinite alternate;
+        }
+
+        @keyframes pulseScale {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* Progress Bar & Status */
+        .progress-wrapper {
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent-primary);
+            border-radius: 3px;
+            transition: width 0.4s ease, background-color 0.3s ease;
+        }
+
+        /* Action Controls */
+        .action-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 18px;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        .btn-primary:disabled {
+            background: var(--border-color);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .kbd-hint {
+            font-size: 11px;
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Secondary Toolbar */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+            border-color: var(--border-highlight);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Selected History Section */
+        .history-section {
+            background: var(--bg-element);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+        }
+
+        .history-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .history-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .history-chips::-webkit-scrollbar {
+            width: 4px;
+        }
+        .history-chips::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+
+        .chip {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .chip-index {
+            color: var(--accent-primary);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .empty-history {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .modal p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 640px) {
+            .app-container { padding: 20px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .header-meta { align-self: flex-end; }
+            .class-btn { font-size: 16px; padding: 12px; }
+            .student-display { font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confettiCanvas"></canvas>
+
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <span class="brand-badge">TMCSS Math</span>
+                <h1>Student Selector</h1>
+            </div>
+            <div class="header-meta">
+                <label class="mode-toggle-label">
+                    <input type="checkbox" id="fastModeToggle" hidden>
+                    <div class="toggle-switch"></div>
+                    Fast Draw
+                </label>
+            </div>
+        </div>
+
+        <!-- Class Tabs -->
+        <div class="class-selector">
+            <button class="class-btn" data-class="5A">
+                5A <span class="class-count-badge" id="badge-5A">33</span>
+            </button>
+            <button class="class-btn" data-class="6A">
+                6A <span class="class-count-badge" id="badge-6A">33</span>
+            </button>
+            <button class="class-btn" data-class="M2">
+                M2 <span class="class-count-badge" id="badge-M2">23</span>
+            </button>
+        </div>
+
+        <!-- Display Stage -->
+        <div class="stage-card" id="stageCard">
+            <div id="studentDisplay" class="student-display placeholder">Select a class to begin</div>
+            
+            <div class="progress-wrapper" id="progressWrapper" style="display: none;">
+                <div class="progress-info">
+                    <span id="progressText">0 of 0 selected</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBarFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selection Controls -->
+        <div class="action-area">
+            <button id="selectBtn" class="btn-primary" disabled>
+                <span>Select Student</span>
+                <span class="kbd-hint">SPACE</span>
+            </button>
+        </div>
+
+        <!-- History Drawer -->
+        <div class="history-section">
+            <div class="history-title">Selection History</div>
+            <div class="history-chips" id="historyChips">
+                <span class="empty-history">No students selected yet in this session</span>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <button id="resetBtn" class="btn-secondary btn-danger">Reset Active Class</button>
+            <button id="resetAllBtn" class="btn-secondary">Reset All Classes</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h3 id="modalTitle">Reset Selections?</h3>
+            <p id="modalDescription">This will restore all students back to the active draw pool.</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="modalCancel">Cancel</button>
+                <button class="btn-secondary btn-danger" id="modalConfirm">Confirm Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Student Data
+        const classData = {
+            "5A": [
+"1 HO PING NOK 何秉諾",
+"2 LIN ZHUO YU 林卓瑜",
+"3 LU YIK FAN 盧奕帆",
+"4 SUN HIU LAAM 辛曉嵐",
+"5 WONG CHI MAN 王姿曼",
+"6 WONG HEI CHING 王希澄",
+"7 XU KAI WAI 許佳卉",
+"8 ZHAO KAITONG 趙凱彤",
+"9 ZOU YIXI 鄒易希",
+"10 CHAN CHI CHIU 陳智昭",
+"11 CHAN KA HO 陳家豪",
+"12 CHAN KA SUM 陳加森",
+"13 CHAN WANG HEI 陳泓希",
+"14 CHAN YUI TO 陳銳濤",
+"15 CHEN GUOLIANG 陳國樑",
+"16 CHEN ZIXUAN KEVIN 陳子軒",
+"17 CHUNG LING CHUN 鍾夌晉",
+"18 HU HARRY 胡漢林",
+"19 HUANG HO SEN 黃浩宸",
+"20 HUI CHUN HEI 許俊熙",
+"21 HUNG TAK HEI 孔德浠",
+"22 LI PIN YUAN 李品源",
+"23 LIN TSZ CHING 林梓澄",
+"24 LU TIANNAN 魯天南",
+"25 NG CHUN YIN 吳俊諺",
+"26 SU KA KI 蘇家棋",
+"27 TANG LONG FUNG 鄧朗鋒",
+"28 WONG TSZ LONG 黃梓朗",
+"29 WU CHUEN 胡尊",
+"30 WU TSZ HO IVAN 吳紫昊",
+"31 YANG HUAI REN 楊懷仁",
+"32 YIU TSZ KIU 姚旨翹"
+
+            ],
+            "6A": [
+"1 CHEUNG CHING YAU 張靖柔",
+"2 CHOW CHEUK LAM 周焯琳",
+"3 HO WAI CHING 何蔚晴",
+"4 LAM KA HEI 林嘉希",
+"5 LEUNG LAI YING 梁勵盈",
+"6 LI HAO TONG HOLLY 李皓潼",
+"7 LI YAN TING 李欣庭",
+"8 MAK WING SZE 麥穎詩",
+"9 SZE TO YIK TING 司徒翊霆",
+"10 YIP TSZ YU 葉子瑜",
+"11 ZHANG ZHI YING 張智穎",
+"12 CHAN HING SHING 陳興盛",
+"13 CHAN HOK YAU 陳學友",
+"14 CHAN KIN HEI 陳建熹",
+"15 CHEN TSZ LONG 陳子朗",
+"16 HUANG CHO HAM 黃祖涵",
+"17 HUANG TSZ HO 黃梓灝",
+"18 HUANG YU KIN 黃宇鍵",
+"19 KONG CHUN HIN 江進軒",
+"20 LEE LUI 李鐳",
+"21 LI CHEN TONG 李宸同",
+"22 LI YUXIANG 李宇翔",
+"23 LIANG HARRY 梁皓源",
+"24 PENG WEI FENG 彭偉豐",
+"25 TSUI CHUN KIU JAYDEN 徐雋翹",
+"26 WANG ANDREW 王磊",
+"27 WONG MING HOI 王銘愷",
+"28 WONG TSZ HIN 黃子軒",
+"29 WONG YUK TSUN 黃鈺竣",
+"30 WU KA WAI 吳家威",
+"31 YEUNG HOI HIM 楊愷謙",
+"32 ZHU LARRY 朱鈞來"            ],
+            "M2": [
+"5A 4 SUN HIU LAAM 辛曉嵐",
+"5A 9 ZOU YIXI 鄒易希",
+"5A 10 CHAN CHI CHIU 陳智昭",
+"5A 11 CHAN KA HO 陳家豪",
+"5A 13 CHAN WANG HEI 陳泓希",
+"5A 14 CHAN YUI TO 陳銳濤",
+"5A 15 CHEN GUOLIANG 陳國樑",
+"5A 17 CHUNG LING CHUN 鍾夌晉",
+"5A 18 HU HARRY 胡漢林",
+"5A 19 HUANG HO SEN 黃浩宸",
+"5A 24 LU TIANNAN 魯天南",
+"5A 25 NG CHUN YIN 吳俊諺",
+"5A 26 SU KA KI 蘇家棋",
+"5A 27 TANG LONG FUNG 鄧朗鋒",
+"5A 30 WU TSZ HO IVAN 吳紫昊",
+"5A 31 YANG HUAI REN 楊懷仁",
+"5A 32 YIU TSZ KIU 姚旨翹",
+"5C 28 TAI CHEUK HO 戴卓濠",
+"5D 10 YEUNG WAI CHING 楊瑋晴",
+"5D 18 LAM TING HIN 林霆軒",
+"5D 29 ZHEN WENKAI 甄文鍇"
+            ]
+        };
+
+        // Application State
+        const selectedState = { "5A": [], "6A": [], "M2": [] };
+        let currentClass = null;
+        let isDrawing = false;
+        let resetTarget = null; // 'active' or 'all'
+
+        // DOM Elements
+        const classBtns = document.querySelectorAll('.class-btn');
+        const selectBtn = document.getElementById('selectBtn');
+        const studentDisplay = document.getElementById('studentDisplay');
+        const stageCard = document.getElementById('stageCard');
+        const historyChips = document.getElementById('historyChips');
+        const progressWrapper = document.getElementById('progressWrapper');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressBarFill = document.getElementById('progressBarFill');
+        const fastModeToggle = document.getElementById('fastModeToggle');
+        const resetBtn = document.getElementById('resetBtn');
+        const resetAllBtn = document.getElementById('resetAllBtn');
+        const confirmModal = document.getElementById('confirmModal');
+        const modalConfirm = document.getElementById('modalConfirm');
+        const modalCancel = document.getElementById('modalCancel');
+
+        // Initialization
+        function init() {
+            classBtns.forEach(btn => {
+                btn.addEventListener('click', () => switchClass(btn.getAttribute('data-class')));
+            });
+
+            selectBtn.addEventListener('click', drawStudent);
+            resetBtn.addEventListener('click', () => promptReset('active'));
+            resetAllBtn.addEventListener('click', () => promptReset('all'));
+            modalCancel.addEventListener('click', closeModal);
+            modalConfirm.addEventListener('click', executeReset);
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && !selectBtn.disabled && !isDrawing && currentClass) {
+                    e.preventDefault();
+                    drawStudent();
+                }
+            });
+
+            updateBadges();
+        }
+
+        // Switch active class
+        function switchClass(className) {
+            if (isDrawing) return;
+
+            currentClass = className;
+
+            classBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-class') === className);
+            });
+
+            selectBtn.disabled = false;
+            progressWrapper.style.display = 'block';
+
+            updateProgress();
+            renderHistory();
+
+            // Set Stage
+            const drawn = selectedState[currentClass];
+            if (drawn.length > 0) {
+                const lastStudent = drawn[drawn.length - 1];
+                studentDisplay.textContent = lastStudent;
+                studentDisplay.className = "student-display";
+            } else {
+                studentDisplay.textContent = "Click button or press Space";
+                studentDisplay.className = "student-display placeholder";
+            }
+        }
+
+        // Draw Random Student
+        function drawStudent() {
+            if (!currentClass || isDrawing) return;
+
+            const all = classData[currentClass];
+            const drawn = selectedState[currentClass];
+            const available = all.filter(s => !drawn.includes(s));
+
+            if (available.length === 0) {
+                studentDisplay.textContent = "All Students Selected!";
+                studentDisplay.className = "student-display placeholder";
+                selectBtn.disabled = true;
+                return;
+            }
+
+            isDrawing = true;
+            selectBtn.disabled = true;
+            stageCard.classList.add('active-glow');
+
+            const fastMode = fastModeToggle.checked;
+
+            if (fastMode) {
+                revealStudent(available);
+            } else {
+                runCountdown(() => revealStudent(available));
+            }
+        }
+
+        // Countdown timer animation
+        function runCountdown(callback) {
+            let count = 3;
+            studentDisplay.className = "student-display countdown";
+            studentDisplay.textContent = count;
+
+            const timer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    studentDisplay.textContent = count;
+                } else {
+                    clearInterval(timer);
+                    callback();
+                }
+            }, 400);
+        }
+
+        // Reveal chosen student
+        function revealStudent(available) {
+            const randomIndex = Math.floor(Math.random() * available.length);
+            const chosen = available[randomIndex];
+
+            selectedState[currentClass].push(chosen);
+
+            studentDisplay.textContent = chosen;
+            studentDisplay.className = "student-display";
+
+            stageCard.classList.remove('active-glow');
+            isDrawing = false;
+            
+            // Check if full
+            const remaining = classData[currentClass].length - selectedState[currentClass].length;
+            selectBtn.disabled = remaining === 0;
+
+            updateProgress();
+            renderHistory();
+            triggerConfetti();
+        }
+
+        // Update progress metrics
+        function updateProgress() {
+            if (!currentClass) return;
+
+            const total = classData[currentClass].length;
+            const count = selectedState[currentClass].length;
+            const percentage = Math.round((count / total) * 100);
+
+            progressText.textContent = `${count} of ${total} selected`;
+            progressPercent.textContent = `${percentage}%`;
+            progressBarFill.style.width = `${percentage}%`;
+
+            if (percentage === 100) {
+                progressBarFill.style.background = "#10b981";
+            } else {
+                progressBarFill.style.background = "var(--accent-primary)";
+            }
+        }
+
+        // Render history drawer
+        function renderHistory() {
+            if (!currentClass) return;
+
+            const drawn = selectedState[currentClass];
+            historyChips.innerHTML = '';
+
+            if (drawn.length === 0) {
+                historyChips.innerHTML = '<span class="empty-history">No students selected yet in this session</span>';
+                return;
+            }
+
+            drawn.forEach((name, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'chip';
+                chip.innerHTML = `<span class="chip-index">#${index + 1}</span> ${name}`;
+                historyChips.appendChild(chip);
+            });
+
+            historyChips.scrollTop = historyChips.scrollHeight;
+        }
+
+        // Update class badges
+        function updateBadges() {
+            Object.keys(classData).forEach(key => {
+                const badge = document.getElementById(`badge-${key}`);
+                if (badge) badge.textContent = classData[key].length;
+            });
+        }
+
+        // Reset dialog handlers
+        function promptReset(target) {
+            resetTarget = target;
+            const modalTitle = document.getElementById('modalTitle');
+            const modalDescription = document.getElementById('modalDescription');
+
+            if (target === 'active') {
+                if (!currentClass) return;
+                modalTitle.textContent = `Reset Class ${currentClass}?`;
+                modalDescription.textContent = `This will clear selection memory for Class ${currentClass}.`;
+            } else {
+                modalTitle.textContent = "Reset All Classes?";
+                modalDescription.textContent = "This will clear all student selection history across all classes.";
+            }
+
+            confirmModal.classList.add('active');
+        }
+
+        function closeModal() {
+            confirmModal.classList.remove('active');
+            resetTarget = null;
+        }
+
+        function executeReset() {
+            if (resetTarget === 'active' && currentClass) {
+                selectedState[currentClass] = [];
+            } else if (resetTarget === 'all') {
+                Object.keys(selectedState).forEach(k => selectedState[k] = []);
+            }
+
+            closeModal();
+
+            if (currentClass) {
+                switchClass(currentClass);
+            }
+        }
+
+        // Lightweight Confetti Particle FX
+        function triggerConfetti() {
+            const canvas = document.getElementById('confettiCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#a855f7'];
+
+            for (let i = 0; i < 40; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 + 50,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.7) * 12,
+                    size: Math.random() * 6 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    alpha: 1,
+                    decay: Math.random() * 0.02 + 0.015
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let active = false;
+
+                particles.forEach(p => {
+                    if (p.alpha > 0) {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.25; // gravity
+                        p.alpha -= p.decay;
+
+                        ctx.globalAlpha = Math.max(p.alpha, 0);
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(p.x, p.y, p.size, p.size);
+                        active = true;
+                    }
+                });
+
+                if (active) {
+                    requestAnimationFrame(animate);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+
+            animate();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
